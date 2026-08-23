@@ -6,20 +6,43 @@ export default function Scanner({ onScan, isDisabled }) {
   const [activeTab, setActiveTab] = useState('CAMERA'); // CAMERA, MANUAL
   const [textCode, setTextCode] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
+  const [isClearing, setIsClearing] = useState(false); // Protects against rapid tab-switching click storms
   const html5QrcodeRef = useRef(null);
 
   useEffect(() => {
-    if (isDisabled || activeTab !== 'CAMERA') {
+    // If the kiosk is currently handling an active print job, force immediate camera stream destruction
+    if (isDisabled) {
       if (html5QrcodeRef.current && html5QrcodeRef.current.isScanning) {
         html5QrcodeRef.current.stop()
           .then(() => {
             html5QrcodeRef.current = null;
             setCameraActive(false);
           })
-          .catch((err) => console.log('Camera clean up handled:', err));
+          .catch((err) => console.log('Print job lock stream cleanup:', err));
       }
       return;
     }
+
+    // Stop lens operations instantly if the human agent clicks over to manual key input layout
+    if (activeTab !== 'CAMERA') {
+      if (html5QrcodeRef.current && html5QrcodeRef.current.isScanning) {
+        setIsClearing(true);
+        html5QrcodeRef.current.stop()
+          .then(() => {
+            html5QrcodeRef.current = null;
+            setCameraActive(false);
+            setIsClearing(false);
+          })
+          .catch((err) => {
+            console.log('Tab clean up collision absorbed safely:', err);
+            setIsClearing(false);
+          });
+      }
+      return;
+    }
+
+    // Delay camera initialization if the library is still cleaning up an active process thread
+    if (isClearing) return;
 
     const html5Qrcode = new Html5Qrcode('camera-viewport-frame');
     html5QrcodeRef.current = html5Qrcode;
@@ -31,6 +54,7 @@ export default function Scanner({ onScan, isDisabled }) {
         qrbox: { width: 220, height: 220 }
       },
       (decodedText) => {
+        // Halt lens cycles immediately on successful capture to block thread storm collisions
         if (html5QrcodeRef.current && html5QrcodeRef.current.isScanning) {
           html5QrcodeRef.current.stop()
             .then(() => {
@@ -38,14 +62,14 @@ export default function Scanner({ onScan, isDisabled }) {
               setCameraActive(false);
               onScan(decodedText.trim().toUpperCase());
             })
-            .catch((err) => console.error('Capture lock exception:', err));
+            .catch((err) => console.error('Capture thread cleanup failure:', err));
         }
       },
-      () => {}
+      () => { /* Absorb continuous frame tracking checks silently */ }
     )
     .then(() => setCameraActive(true))
     .catch((err) => {
-      console.warn('Camera access error:', err.message);
+      console.warn('Media lens clearance exception:', err.message);
       setCameraActive(false);
     });
 
@@ -54,22 +78,24 @@ export default function Scanner({ onScan, isDisabled }) {
         html5QrcodeRef.current.stop().catch(() => {});
       }
     };
-  }, [isDisabled, activeTab, onScan]);
+  }, [isDisabled, activeTab, onScan, isClearing]);
 
   const handleManualSubmission = (e) => {
     e.preventDefault();
-    if (!textCode.trim() || isDisabled) return;
+    if (!textCode.trim() || isDisabled || isClearing) return;
     onScan(textCode.trim().toUpperCase());
     setTextCode('');
   };
 
   return (
     <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl shadow-2xl max-w-md mx-auto w-full backdrop-blur-sm">
+      
+      {/* Navigation Tab Anchors */}
       <div className="flex bg-slate-950 p-1.5 rounded-xl gap-1 mb-5 border border-slate-900">
         <button
           type="button"
           onClick={() => setActiveTab('CAMERA')}
-          disabled={isDisabled}
+          disabled={isDisabled || isClearing}
           className={`flex-1 flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-lg transition-all ${
             activeTab === 'CAMERA'
               ? 'bg-slate-800 text-emerald-400 shadow-md'
@@ -82,7 +108,7 @@ export default function Scanner({ onScan, isDisabled }) {
         <button
           type="button"
           onClick={() => setActiveTab('MANUAL')}
-          disabled={isDisabled}
+          disabled={isDisabled || isClearing}
           className={`flex-1 flex items-center justify-center gap-2 text-xs font-bold py-2.5 rounded-lg transition-all ${
             activeTab === 'MANUAL'
               ? 'bg-slate-800 text-indigo-400 shadow-md'
@@ -94,11 +120,16 @@ export default function Scanner({ onScan, isDisabled }) {
         </button>
       </div>
 
-      {isDisabled ? (
+      {/* Tab Panel Context Execution Container Layouts */}
+      {isDisabled || isClearing ? (
         <div className="bg-slate-950 aspect-video rounded-xl flex flex-col items-center justify-center border border-dashed border-slate-800 p-4">
-          <p className="text-amber-400/80 text-xs font-semibold tracking-wider uppercase mb-1">Device Busy</p>
+          <p className="text-amber-400/80 text-xs font-semibold tracking-wider uppercase mb-1">
+            {isClearing ? 'Reconfiguring Viewports...' : 'Device Busy'}
+          </p>
           <p className="text-slate-500 text-xs text-center max-w-[240px]">
-            Hardware channel locked out-of-thread until print completion callback is recorded.
+            {isClearing 
+              ? 'Safely shutting down camera optical feed threads to prevent resource locks.' 
+              : 'Hardware channel locked out-of-thread until print completion callback is recorded.'}
           </p>
         </div>
       ) : activeTab === 'CAMERA' ? (
@@ -128,7 +159,7 @@ export default function Scanner({ onScan, isDisabled }) {
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-4 pr-11 py-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 tracking-wide font-mono transition-colors uppercase"
               autoFocus
             />
-            <ScanLine className="absolute right-3.5 top-4 text-slate-600 w-4 h-4 animate-pulse" />
+            <ScanLine className="absolute right-3.5 top-4 text-slate-600 w-4 h-4 " />
           </div>
           <button
             type="submit"
