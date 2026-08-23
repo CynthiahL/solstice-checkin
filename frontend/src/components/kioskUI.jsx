@@ -1,39 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { Loader2, CheckCircle2, AlertTriangle, RefreshCcw, UserCheck, ShieldCheck } from 'lucide-react';
-import Scanner from './Scanner';
+import Scanner from './Scanner.jsx';
 
 export default function KioskUI() {
   const [uiState, setUiState] = useState('IDLE'); // IDLE, PRINT_PENDING, CHECKED_IN, ERROR
   const [statusMessage, setStatusMessage] = useState('Please present your entry ticket or input your registration code.');
   const [activeAttendeeId, setActiveAttendeeId] = useState(null);
-  const [attendeeDetails, setAttendeeDetails] = useState({ name: '', qrCode: '' });
-  const [socket, setSocket] = useState(null);
+  
+  // Using a mutable ref container instead of state completely satisfies your editor's linter rules
+  const socketRef = useRef(null);
 
+  // 1. Establish synchronization pipe to production cluster core backend server port safely
   useEffect(() => {
-    // Establish synchronization pipe to production cluster core backend server port
-    const newSocket = io('http://localhost:3000');
-    setSocket(newSocket);
-    return () => newSocket.disconnect();
+    const newSocket = io('https://solstice-checkin-api.onrender.com', {
+      transports: ['websocket', 'polling']
+    });
+    
+    socketRef.current = newSocket;
+
+    return () => {
+      newSocket.disconnect();
+    };
   }, []);
 
+  // 2. Monitor asynchronous webhook signals coming from the backend broker instance
   useEffect(() => {
-    if (!socket || !activeAttendeeId) return;
+    const activeSocket = socketRef.current;
+    if (!activeSocket || !activeAttendeeId) return;
 
-    socket.emit('register_kiosk', activeAttendeeId);
+    activeSocket.emit('register_kiosk', activeAttendeeId);
 
-    socket.on('status_updated', (payload) => {
+    const handleStatusUpdate = (payload) => {
       if (payload.status === 'CHECKED_IN') {
         setUiState('CHECKED_IN');
         setStatusMessage('Your badge has printed successfully! Please collect your badge below and enjoy the conference.');
       }
-    });
+    };
+
+    activeSocket.on('status_updated', handleStatusUpdate);
 
     return () => {
-      socket.off('status_updated');
+      activeSocket.off('status_updated', handleStatusUpdate);
     };
-  }, [socket, activeAttendeeId]);
+  }, [activeAttendeeId]);
 
   const handleCheckinProcessing = async (qrCode) => {
     setUiState('PRINT_PENDING');
@@ -41,7 +52,7 @@ export default function KioskUI() {
     setActiveAttendeeId(null);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/checkin/scan', 
+      const response = await axios.post('https://solstice-checkin-api.onrender.com/api/checkin/scan', 
         { qrCode },
         { headers: { 'Authorization': 'Bearer solstice_kiosk_secret_2026' } }
       );
@@ -113,6 +124,7 @@ export default function KioskUI() {
 
         {uiState !== 'IDLE' && uiState !== 'PRINT_PENDING' && (
           <button
+            type="button"
             onClick={resetKiosk}
             className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all border border-slate-800 shadow-md active:scale-95"
           >
@@ -122,7 +134,7 @@ export default function KioskUI() {
         )}
       </div>
 
-      {/* Duel Verification Component Module */}
+      {/* Dual Verification Component Module */}
       <Scanner onScan={handleCheckinProcessing} isDisabled={uiState === 'PRINT_PENDING'} />
     </div>
   );
