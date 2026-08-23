@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { Loader2, CheckCircle2, AlertTriangle, RefreshCcw, UserCheck, ShieldCheck } from 'lucide-react';
-import Scanner from './Scanner.jsx';
+import Scanner from './Scanner.jsx'; // 👈 Relative dot-slash tracking inside the same singular folder
+
 
 export default function KioskUI() {
   const [uiState, setUiState] = useState('IDLE'); // IDLE, PRINT_PENDING, CHECKED_IN, ERROR
