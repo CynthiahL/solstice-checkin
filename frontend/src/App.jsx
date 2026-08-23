@@ -1,5 +1,5 @@
 import React from 'react';
-import KioskUI from './KioskUI.jsx'; // 👈 Points directly to the file sitting flat inside your src/ directory root
+import KioskUI from './components/kioskUI.jsx'; // Explicitly tracks your lowercase nested folder path
 
 export default function App() {
   return <KioskUI />;

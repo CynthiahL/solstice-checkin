@@ -5,19 +5,17 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss()
+    tailwindcss() // Injects both core layout plugins directly inside the structural array properties
   ],
   server: {
     port: 5173,
     strictPort: true
   },
-  // Injects an override to prevent syntax warnings from crashing the cloud production build pipeline
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
   },
   build: {
     chunkSizeWarningLimit: 1000,
-    // Ensures small warnings do not raise fatal termination exit codes
     reportCompressedSize: false
   }
 });
