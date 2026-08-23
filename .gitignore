@@ -1,0 +1,19 @@
+# 1. Dependency Lock Registries
+node_modules/
+**/node_modules/
+
+# 2. Local Environment Variable Secret Files (Critical Safety)
+.env
+**/.env
+.env.local
+.env.production
+
+# 3. Build & Compilation Output Bundles
+dist/
+**/dist/
+.cache/
+.turbo/
+
+# 4. OS System Overhead Trace Files
+.DS_Store
+Thumbs.db

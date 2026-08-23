@@ -1,0 +1,29 @@
+{
+  "name": "solstice-checkin-workspace",
+  "version": "1.0.0",
+  "description": "Asynchronous event kiosk system and workspace for Solstice Events Co.",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "backend:dev": "npm run dev --workspace=backend",
+    "frontend:dev": "npm run dev --workspace=frontend",
+    "test": "npm run test --workspace=backend",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,json,md,css}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^15.15.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.3.6"
+  }
+}
