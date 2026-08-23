@@ -1,5 +1,5 @@
 import React from 'react';
-import KioskUI from './component/KioskUI.jsx'; // 👈 Explicitly matches your exact singular 'component' directory tree path
+import KioskUI from './components/KioskUI.jsx'; // 👈 Explicitly matches your physical plural 'components' folder on disk
 
 export default function App() {
   return <KioskUI />;
