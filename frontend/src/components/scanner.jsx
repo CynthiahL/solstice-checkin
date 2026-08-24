@@ -10,11 +10,9 @@ export default function Scanner({ onScan, isDisabled }) {
 
   // Dedicated Persistent Camera Lifecycle Controller Loop
   useEffect(() => {
-    // Standard initialization block
     const html5Qrcode = new Html5Qrcode('camera-viewport-frame');
     html5QrcodeRef.current = html5Qrcode;
 
-    // Boot up the native device camera lens capture matrix immediately on initialization
     html5Qrcode.start(
       { facingMode: 'user' },
       {
@@ -22,10 +20,9 @@ export default function Scanner({ onScan, isDisabled }) {
         qrbox: { width: 220, height: 220 }
       },
       (decodedText) => {
-        // Successful QR code match achieved, trigger the parent callback with the normalized code
         onScan(decodedText.trim().toUpperCase());
       },
-      () => { /* Silently absorb ambient frame trace passes */ }
+      () => { /* Silently absorb ambient frame passes */ }
     )
     .then(() => setCameraActive(true))
     .catch((err) => {
@@ -33,11 +30,17 @@ export default function Scanner({ onScan, isDisabled }) {
       setCameraActive(false);
     });
 
-    // Persistent Teardown clean loop on absolute component unmount lifecycle frames
+    // Production-hardened safe teardown loop on absolute component unmount
     return () => {
       if (html5QrcodeRef.current) {
-        if (html5QrcodeRef.current.isScanning) {
-          html5QrcodeRef.current.stop().catch((err) => console.log('Absorbing camera stop pass:', err));
+        try {
+          if (html5QrcodeRef.current.isScanning) {
+            html5QrcodeRef.current.stop()
+              .catch((err) => console.log('Camera stop thread cleanup trace:', err.message));
+          }
+        } catch (e) {
+          // Captures and dampens any asynchronous race conditions if the DOM element disappears first
+          console.log('Absorbed camera DOM node removal intersection safely.');
         }
       }
     };
@@ -91,7 +94,7 @@ export default function Scanner({ onScan, isDisabled }) {
         </div>
       )}
 
-      {/* 🟢 Tab Panel A: Optical Lens Region. We manage state via visibility overrides rather than unmounting */}
+      {/* Tab Panel A: Optical Lens Region managed via visibility overrides */}
       <div className={`${activeTab === 'CAMERA' && !isDisabled ? 'block' : 'hidden'} space-y-3`}>
         <div className="relative overflow-hidden rounded-xl bg-slate-950 border border-slate-800/80 aspect-video flex items-center justify-center text-slate-600">
           <div id="camera-viewport-frame" className="w-full h-full object-cover"></div>
@@ -108,7 +111,7 @@ export default function Scanner({ onScan, isDisabled }) {
         </p>
       </div>
 
-      {/* 🔵 Tab Panel B: Manual Form Input Region. Controls visibility via Tailwind overrides */}
+      {/* Tab Panel B: Manual Form Input Region managed via visibility overrides */}
       <form 
         onSubmit={handleManualSubmission} 
         className={`${activeTab === 'MANUAL' && !isDisabled ? 'block' : 'hidden'} space-y-4`}
