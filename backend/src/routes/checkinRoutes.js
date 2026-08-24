@@ -1,5 +1,4 @@
 import express from 'express';
-import { verifyPrinterWebhookSignature } from '../middleware/auth.js'; // Ensures clean shared helper lookups
 import { processScan } from '../controller/checkinController.js';
 
 const router = express.Router();
