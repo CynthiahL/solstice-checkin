@@ -7,58 +7,26 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Pull keys safely out of your local .env configuration file registry mapping
+// Pull production variables cleanly out of your local environmental configuration block
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
-// 🎯 production-hardened routing changes: Linked straight to your hosted web service targets
+// Centrally managed web service production endpoints
 const TARGET_WEBHOOK_URL = 'https://solstice-checkin-api.onrender.com';
 const WEBHOOK_SIGNING_SECRET = process.env.WEBHOOK_SIGNING_SECRET || 'vendor_webhook_secret_2026';
 
-// 🎯 Cloud Sync Change: Pull keys directly from your live, cloud-hosted Supabase dashboard variables
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-import express from 'express';
-import { verifyPrinterWebhookSignature } from '../middleware/auth.js'; // HMAC validator guard
-import { checkinService } from '../services/checkinService.js';      // Handles Supabase mutations
-import { emitToKiosk } from '../app.js';                              // Live WebSocket stream controller
-
-const router = express.Router();
-
-// 🎯 THE FIX: Explicitly register the path suffix as '/printer'
-router.post('/printer', verifyPrinterWebhookSignature, async (req, res, next) => {
-  const { attendeeId, event_type } = req.body;
-
-  if (event_type !== 'print.success') {
-    return res.status(400).send('Unhandled webhook event context routing criteria.');
-  }
-
-  try {
-    // 1. Transition your database schema row record column value to 'CHECKED_IN'
-    await checkinService.completeCheckin(attendeeId);
-
-    // 2. Dispatch a real-time WebSocket notice out-of-band to update your Vercel frontend layout view
-    emitToKiosk(attendeeId, { status: 'CHECKED_IN' });
-
-    return res.status(200).send('Webhook resolved successfully.');
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
 
 async function executeAutomatedWebhookConfirmation() {
   console.log('🤖 Initializing live cloud target attendee ID lookup sequence...');
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    console.error('❌ Error: Production SUPABASE environment keys are missing inside your local .env file.');
-    console.log('Action: Ensure your local backend/.env contains your true cloud-hosted Supabase URL strings.');
+    console.error('❌ Error: Production SUPABASE environment keys are missing inside your local backend/.env file.');
     return;
   }
 
   try {
-    // 1. Query your active live production Supabase REST interface for the record stuck in printing loop states
+    // 1. Fetch the active record stuck in a pending processing print loop from your live database cluster
     const dbSnapshot = await axios.get(
       `${SUPABASE_URL}/rest/v1/attendees?check_in_status=eq.PRINT_PENDING&limit=1`,
       {
@@ -69,10 +37,10 @@ async function executeAutomatedWebhookConfirmation() {
       }
     );
 
-    // 2. Fallback check validation gate
+    // 2. Fallback check gate if no scans are active
     if (!dbSnapshot.data || dbSnapshot.data.length === 0) {
       console.log('⚠️  No live attendee profiles are currently flag-locked inside a "PRINT_PENDING" state.');
-      console.log('👉 Action: Open https://solstice-checkin-frontend.vercel.app/, input a fresh registration code, and re-run.');
+      console.log('👉 Action: Open https://solstice-checkin-frontend.vercel.app/, submit a clean code, and re-run.');
       return;
     }
 
@@ -81,13 +49,13 @@ async function executeAutomatedWebhookConfirmation() {
 
     console.log(`🎯 Active live transaction traced! Target user found: ${targetAttendee.name} (${targetAttendeeId})`);
 
-    // 3. Assemble the authentic callback payload structures
+    // 3. Assemble the authentic vendor network callback schema payload
     const payload = {
       event_type: 'print.success',
       attendeeId: targetAttendeeId
     };
 
-    // 4. Compute identical cryptographic signature hashes to clear your cloud backend middleware checkpoints
+    // 4. Compute the cryptographic signature using your shared security secret token keys
     const signature = crypto
       .createHmac('sha256', WEBHOOK_SIGNING_SECRET)
       .update(JSON.stringify(payload))
@@ -95,7 +63,7 @@ async function executeAutomatedWebhookConfirmation() {
 
     console.log('📤 Dispatching signed production webhook callback packet to live Render network routing...');
 
-    // 5. Fire the completed payload back down into your server endpoint container
+    // 5. Inject the mock completion webhook directly back into your live web api server container
     const webhookResponse = await axios.post(TARGET_WEBHOOK_URL, payload, {
       headers: {
         'Content-Type': 'application/json',
