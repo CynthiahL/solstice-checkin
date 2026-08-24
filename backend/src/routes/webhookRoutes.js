@@ -5,6 +5,7 @@ import { emitToKiosk } from '../app.js';                              // Live We
 
 const router = express.Router();
 
+// 🎯 THE FIX: Explicitly register the path suffix as '/printer'
 router.post('/printer', verifyPrinterWebhookSignature, async (req, res, next) => {
   const { attendeeId, event_type } = req.body;
 
