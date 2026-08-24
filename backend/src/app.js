@@ -17,9 +17,11 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Mounted CORS middleware
+// Mounted CORS middleware//
 app.use(cors({ 
-  origin: 'https://solstice-checkin-frontend.vercel.app/', 
+  origin: 'https://solstice-checkin-frontend.vercel.app', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-solstice-signature'],
   credentials: true 
 })); 
 
@@ -27,7 +29,7 @@ app.use(express.json());
 
 const io = new Server(server, { 
   cors: { 
-    origin: 'https://solstice-checkin-frontend.vercel.app/', 
+    origin: 'https://solstice-checkin-frontend.vercel.app', 
     methods: ["GET", "POST"] 
   }
 });
