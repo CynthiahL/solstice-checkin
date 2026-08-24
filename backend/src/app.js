@@ -1,11 +1,10 @@
 import express from 'express';
 import http from 'http';
-import cors from 'cors'; // Injected core module dependency
+import cors from 'cors';
 import { Server } from 'socket.io';
 import { serve } from 'inngest/express';
 import dotenv from 'dotenv';
 
-// Relative route structural configurations 
 import checkinRoutes from './routes/checkinRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -17,39 +16,35 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Mounted CORS middleware//
-app.use(cors({ 
-  origin: 'https://solstice-checkin-frontend.vercel.app', 
+// Fixed: Clean single quotes with NO trailing slash for absolute domain validation
+app.use(cors({
+  origin: 'https://solstice-checkin-frontend.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-solstice-signature'],
-  credentials: true 
-})); 
+  credentials: true
+}));
 
 app.use(express.json());
 
-const io = new Server(server, { 
-  cors: { 
-    origin: 'https://solstice-checkin-frontend.vercel.app', 
-    methods: ["GET", "POST"] 
+const io = new Server(server, {
+  cors: {
+    origin: 'https://solstice-checkin-frontend.vercel.app',
+    methods: ["GET", "POST"]
   }
 });
 
-// Mounted API endpoint clusters
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
-// Fallback visual landing page
 app.get('/', (req, res) => {
   res.status(200).json({ status: 'ONLINE', app: 'Solstice Kiosk Async Engine' });
 });
 
-// Mounted Inngest Async Background Framework Context
-app.use('/api/inngest', serve({ 
-  client: inngest, 
-  functions: [processPrintRequest] 
+app.use('/api/inngest', serve({
+  client: inngest,
+  functions: [processPrintRequest]
 }));
 
-// Global Error Interceptor Pipeline
 app.use(errorHandler);
 
 const activeKiosks = new Map();

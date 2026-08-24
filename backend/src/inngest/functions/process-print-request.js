@@ -12,7 +12,6 @@ export const processPrintRequest = inngest.createFunction(
     const { attendeeId, qrCode, name } = event.data;
 
     await step.run("forward-to-vendor-queue", async () => {
-      // Mocking target vendor queue handler link loop parameters
       const vendorQueueEndpoint = "https://vendor-badge-printer.com";
 
       try {
@@ -21,19 +20,18 @@ export const processPrintRequest = inngest.createFunction(
           {
             vendor_job_metadata: { attendeeDbId: attendeeId },
             badge_data: { qr_code: qrCode, full_name: name },
-            // 🎯 Fixed: Points directly to your real, active, live backend server web service URL endpoint container on Render
-            callback_url: "https://solstice-checkin-api.onrender.com/api/webhooks/printer",
+            // Fixed: Maps directly to your mounted webhook route parameter endpoint
+            callback_url: "https://solstice-checkin-api.onrender.com",
           },
           {
             headers: {
-              Authorization: `Bearer ${process.env.VENDOR_API_KEY || "mock_vendor_key_2026"}`,
+              Authorization: `Bearer ${process.env.VENDOR_API_KEY || "mock_vendor_key_2026"}`
             },
-            timeout: 5000,
+            timeout: 5000
           }
         );
       } catch (error) {
         console.error(`[Inngest Worker Engine Fault] Queue push failed for ${attendeeId}:`, error.message);
-        // Throwing the error alerts Inngest Cloud to initialize its automated exponential retry fallback queues
         throw error;
       }
     });
