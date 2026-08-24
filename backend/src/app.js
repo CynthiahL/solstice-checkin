@@ -17,12 +17,19 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Mount CORS middleware BEFORE mounting routing pathways
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); 
+// Mounted CORS middleware
+app.use(cors({ 
+  origin: 'https://solstice-checkin-frontend.vercel.app/', 
+  credentials: true 
+})); 
+
 app.use(express.json());
 
 const io = new Server(server, { 
-  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
+  cors: { 
+    origin: 'https://solstice-checkin-frontend.vercel.app/', 
+    methods: ["GET", "POST"] 
+  }
 });
 
 // Mounted API endpoint clusters

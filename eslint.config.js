@@ -25,8 +25,8 @@ export default [
       }
     },
     rules: {
-      "no-console": "off", // Essential for tracing background print jobs
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^next" }] // Protects Express route signatures
+      "no-console": "off",
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^next" }]
     }
   },
 
@@ -48,8 +48,8 @@ export default [
     rules: {
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      "react/prop-types": "off", // Disabled for clean modern JSX state flows
-      "react/react-in-jsx-scope": "off" // Disabled for modern React 17+ / Vite configurations
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off"
     }
   },
 
@@ -57,7 +57,7 @@ export default [
   {
     settings: {
       react: {
-        version: "19.0" // Explicit configuration freezes and fixes the legacy getFilename() engine crash
+        version: "19.0"
       }
     }
   },

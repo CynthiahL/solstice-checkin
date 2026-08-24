@@ -12,7 +12,7 @@ export const attendeeService = {
     return data;
   },
 
-  // Locks state directly at the query layer to provide instant duplicate scan protection
+  // Lock state directly at the query layer to provide instant duplicate scan protection
   async lockForPrinting(qrCode) {
     const { data, error } = await supabase
       .from('attendees')
@@ -23,6 +23,6 @@ export const attendeeService = {
       .maybeSingle();
 
     if (error) throw error;
-    return data; // Returns empty data if conditions fail, flagging a duplicate scan
+    return data;
   }
 };

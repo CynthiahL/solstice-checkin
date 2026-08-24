@@ -1,5 +1,5 @@
 import express from 'express';
-// Fixed path: points to singular 'controller' instead of 'controllers'
+// Singular controller import for checkin operations//
 import { checkinController } from '../controller/checkinController.js';
 import { authMiddleware } from '../middleware/auth.js';
 

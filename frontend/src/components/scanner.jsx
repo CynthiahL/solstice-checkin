@@ -22,7 +22,7 @@ export default function Scanner({ onScan, isDisabled }) {
         qrbox: { width: 220, height: 220 }
       },
       (decodedText) => {
-        // Successful QR code match achieved! Forward string context up to client state wrapper
+        // Successful QR code match achieved, trigger the parent callback with the normalized code
         onScan(decodedText.trim().toUpperCase());
       },
       () => { /* Silently absorb ambient frame trace passes */ }

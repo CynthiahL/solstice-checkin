@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss() // Injects both core layout plugins directly inside the structural array properties
+    tailwindcss()
   ],
   server: {
     port: 5173,

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '.env') }); // 3. Force dotenv to load the local backend/.env file
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const TARGET_WEBHOOK_URL = 'http://localhost:3000/api/webhooks/printer';
 const WEBHOOK_SIGNING_SECRET = process.env.WEBHOOK_SIGNING_SECRET || 'vendor_webhook_secret_2026';
