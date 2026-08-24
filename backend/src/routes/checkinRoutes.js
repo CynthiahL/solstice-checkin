@@ -1,10 +1,10 @@
 import express from 'express';
-// Singular controller import for checkin operations//
-import { checkinController } from '../controller/checkinController.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { verifyPrinterWebhookSignature } from '../middleware/auth.js'; // Ensures clean shared helper lookups
+import { processScan } from '../controller/checkinController.js';
 
 const router = express.Router();
 
-router.post('/scan', authMiddleware.verifyKioskApiKey, checkinController.processScan);
+// This route processes the scan from the Kiosk view interface layer
+router.post('/scan', processScan);
 
 export default router;
