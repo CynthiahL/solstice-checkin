@@ -9,8 +9,6 @@ dotenv.config();
  */
 export const inngest = new Inngest({ 
   id: "solstice-checkin-workspace",
-  // Binds the active publish token key directly to the delivery channel handler
   eventKey: process.env.INNGEST_EVENT_KEY,
-  // Enforces production cryptographic verification on inbound cloud worker signals
   signingKey: process.env.INNGEST_SIGNING_KEY
 });
